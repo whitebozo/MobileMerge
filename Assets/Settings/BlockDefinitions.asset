@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a73171a97b224dec95c0034fb80bf77c, type: 3}
+  m_Name: BlockDefinitions
+  m_EditorClassIdentifier: 
+  blocks:
+  - number: 2
+    color: {r: 1, g: 0, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 4
+    color: {r: 0, g: 1, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 8
+    color: {r: 0, g: 0, b: 1, a: 1}
+    image: {fileID: 0}
+  - number: 16
+    color: {r: 1, g: 1, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 32
+    color: {r: 1, g: 0, b: 1, a: 1}
+    image: {fileID: 0}
+  - number: 64
+    color: {r: 0, g: 1, b: 1, a: 1}
+    image: {fileID: 0}
+  - number: 128
+    color: {r: 0.5019608, g: 0, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 256
+    color: {r: 0.5019608, g: 0.5019608, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 512
+    color: {r: 0, g: 0.5019608, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 1024
+    color: {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
+    image: {fileID: 0}
+  - number: 2048
+    color: {r: 0, g: 0.5019608, b: 0.5019608, a: 1}
+    image: {fileID: 0}
+  - number: 4096
+    color: {r: 0, g: 0, b: 0.5019608, a: 1}
+    image: {fileID: 0}
+  - number: 8192
+    color: {r: 1, g: 0.64705884, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 16384
+    color: {r: 0.64705884, g: 0.16470589, b: 0.16470589, a: 1}
+    image: {fileID: 0}
+  - number: 32768
+    color: {r: 0.87058824, g: 0.72156864, b: 0.5294118, a: 1}
+    image: {fileID: 0}
+  - number: 65536
+    color: {r: 0.37254903, g: 0.61960787, b: 0.627451, a: 1}
+    image: {fileID: 0}
+  - number: 131072
+    color: {r: 0.49803922, g: 1, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 262144
+    color: {r: 0.8235294, g: 0.4117647, b: 0.11764706, a: 1}
+    image: {fileID: 0}
+  - number: 524288
+    color: {r: 1, g: 0.49803922, b: 0.3137255, a: 1}
+    image: {fileID: 0}
+  - number: 1048576
+    color: {r: 0.39215687, g: 0.58431375, b: 0.92941177, a: 1}
+    image: {fileID: 0}
+  - number: 2097152
+    color: {r: 0.8627451, g: 0.078431375, b: 0.23529412, a: 1}
+    image: {fileID: 0}
+  - number: 4194304
+    color: {r: 0, g: 0.80784315, b: 0.81960785, a: 1}
+    image: {fileID: 0}
+  - number: 8388608
+    color: {r: 0.72156864, g: 0.5254902, b: 0.043137256, a: 1}
+    image: {fileID: 0}
+  - number: 16777216
+    color: {r: 0, g: 0.39215687, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 33554432
+    color: {r: 0.54509807, g: 0, b: 0.54509807, a: 1}
+    image: {fileID: 0}
+  - number: 67108864
+    color: {r: 0.54509807, g: 0, b: 0, a: 1}
+    image: {fileID: 0}
+  - number: 134217728
+    color: {r: 0.28235295, g: 0.23921569, b: 0.54509807, a: 1}
+    image: {fileID: 0}
+  - number: 268435456
+    color: {r: 0, g: 0.7490196, b: 1, a: 1}
+    image: {fileID: 0}
+  - number: 536870912
+    color: {r: 0.18431373, g: 0.30980393, b: 0.30980393, a: 1}
+    image: {fileID: 0}
+  - number: 1073741824
+    color: {r: 0, g: 0, b: 0, a: 1}
+    image: {fileID: 0}

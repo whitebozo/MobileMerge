@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3581b5d03ed9464ba4dd5f32aff90cb2, type: 3}
+  m_Name: Milestones
+  m_EditorClassIdentifier: 
+  milestones:
+  - targetScore: 16384
+    blocksToAdd: 80000000
+    blocksToRemove: 02000000
+  - targetScore: 32768
+    blocksToAdd: 00010000
+    blocksToRemove: 04000000
+  - targetScore: 65536
+    blocksToAdd: 00020000
+    blocksToRemove: 08000000
+  - targetScore: 131072
+    blocksToAdd: 00040000
+    blocksToRemove: 10000000
+  - targetScore: 262144
+    blocksToAdd: 00080000
+    blocksToRemove: 20000000
+  - targetScore: 524288
+    blocksToAdd: 00100000
+    blocksToRemove: 40000000
+  - targetScore: 1048576
+    blocksToAdd: 00200000
+    blocksToRemove: 80000000
+  - targetScore: 2097152
+    blocksToAdd: 00400000
+    blocksToRemove: 00010000
+  - targetScore: 4194304
+    blocksToAdd: 00800000
+    blocksToRemove: 00020000
+  - targetScore: 8388608
+    blocksToAdd: 00000100
+    blocksToRemove: 00040000
+  - targetScore: 16777216
+    blocksToAdd: 00000200
+    blocksToRemove: 00080000
+  - targetScore: 33554432
+    blocksToAdd: 00000400
+    blocksToRemove: 00100000
+  - targetScore: 67108864
+    blocksToAdd: 00000800
+    blocksToRemove: 00200000
+  - targetScore: 134217728
+    blocksToAdd: 00001000
+    blocksToRemove: 00400000
+  - targetScore: 268435456
+    blocksToAdd: 00002000
+    blocksToRemove: 00800000
+  - targetScore: 536870912
+    blocksToAdd: 00004000
+    blocksToRemove: 00000100
