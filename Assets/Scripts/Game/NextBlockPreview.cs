@@ -5,7 +5,8 @@ namespace Merge.Game
 {
     public class NextBlockPreview : MonoBehaviour
     {
-        public GameObject blockPrefab;
+        [SerializeField] private GameObject blockPrefab;
+        [SerializeField] private Transform previewHolder;
         private Block _nextBlock;
 
         public void UpdatePreviewBlock(BlockDefinition definition)
@@ -15,10 +16,11 @@ namespace Merge.Game
                 Destroy(_nextBlock.gameObject);
             }
 
-            var blockObj = Instantiate(blockPrefab, transform.position, Quaternion.identity);
+            var blockObj = Instantiate(blockPrefab, previewHolder.position, Quaternion.identity);
             _nextBlock = blockObj.GetComponent<Block>();
-            _nextBlock.transform.SetParent(transform);
-            _nextBlock.transform.localScale = Vector3.one; // Ensure it scales correctly within the UI
+            _nextBlock.transform.SetParent(previewHolder, false);
+            _nextBlock.transform.localPosition = Vector3.zero;
+            _nextBlock.transform.localScale = Vector3.one;
             _nextBlock.SetDefinition(definition);
         }
 
