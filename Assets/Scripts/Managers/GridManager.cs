@@ -16,11 +16,12 @@ namespace Merge.Managers
         private List<BlockDefinition> _currentSpawningPool;
         private BlockDefinition[,] _grid;
 
+        private const int Rows = 7;
+        private int Columns => columns.Length;
+        
         public void Initialize()
         {
-            const int rows = 7;
-            var cols = columns.Length;
-            _grid = new BlockDefinition[cols, rows];
+            _grid = new BlockDefinition[Columns, Rows];
             _currentSpawningPool = new List<BlockDefinition>();
 
             // Initial pool setup
@@ -57,207 +58,167 @@ namespace Merge.Managers
                 }
             }
         }
-        
+
         public void HandleMouseClick(Vector2 localPosition, RectTransform canvasRectTransform)
         {
             // Determine which column was clicked based on the local position
-            var columnWidth = canvasRectTransform.rect.width / columns.Length;
-            var column = Mathf.Clamp((int)((localPosition.x + canvasRectTransform.rect.width / 2) / columnWidth), 0, columns.Length - 1);
+            var rect = canvasRectTransform.rect;
+            var columnWidth = rect.width / columns.Length;
+            var column = Mathf.Clamp((int)((localPosition.x + rect.width / 2) / columnWidth), 0, columns.Length - 1);
 
             SpawnNewBlock(column);
         }
 
-        public void SpawnNewBlock(int column)
+        private void SpawnNewBlock(int column)
         {
             var blockDefinition = nextBlockPreview.GetNextBlockDefinition();
             var blockObj = Instantiate(blockPrefab);
             var block = blockObj.GetComponent<Block>();
             block.SetDefinition(blockDefinition);
 
-            StartCoroutine(DropBlock(block, column));
+            StartCoroutine(DropBlock(block, column, 0));
             nextBlockPreview.UpdatePreviewBlock(GetRandomBlockDefinition());
         }
 
-        private IEnumerator DropBlock(Block block, int column)
+        private IEnumerator DropBlock(Block block, int column, int startingRow)
         {
-            var row = columns[column].transform.childCount - 1;
-            while (row >= 0 && _grid[column, row] == null)
+            var row = startingRow;
+            while (row <= Rows - 1 && _grid[column, row] == null)
             {
                 block.transform.SetParent(columns[column].transform.GetChild(row), false); // Set the parent to the row
                 yield return new WaitForSeconds(0.1f);
-                row--;
+                row++;
             }
 
-            row++;
-            if (row < columns[column].transform.childCount)
+            row--;
+            Debug.Log($"Block dropped from [{column},{startingRow}] => [{column},{row}]");
+            if (row < Rows)
             {
                 _grid[column, row] = block.definition;
-                CheckMerge(column, row);
-            }
-        }
-
-        private void CheckMerge(int column, int row)
-        {
-            var sameBlocks = new List<Block>();
-            var number = _grid[column, row].number;
-
-            // Check vertically
-            for (var r = row - 1; r <= row + 1; r++)
-            {
-                if (r >= 0 && r < _grid.GetLength(1) && _grid[column, r] != null && _grid[column, r].number == number && r != row)
-                {
-                    sameBlocks.Add(GetBlockAtPosition(column, r));
-                }
-            }
-
-            // Check horizontally
-            for (var c = column - 1; c <= column + 1; c++)
-            {
-                if (c >= 0 && c < _grid.GetLength(0) && _grid[c, row] != null && _grid[c, row].number == number && c != column)
-                {
-                    sameBlocks.Add(GetBlockAtPosition(c, row));
-                }
-            }
-
-            if (sameBlocks.Count >= 1)
-            {
-                var newNumber = 0;
-
-                // Calculate new number based on the number of blocks touching
-                if (sameBlocks.Count == 1)
-                {
-                    newNumber = number + number; // n + n
-                }
-                else if (sameBlocks.Count >= 2)
-                {
-                    newNumber = number * 4; // n * 4
-                }
-
-                foreach (var b in sameBlocks)
-                {
-                    var bColumn = b.transform.parent.parent.GetSiblingIndex();
-                    var bRow = b.transform.parent.GetSiblingIndex();
-                    _grid[bColumn, bRow] = null;
-                    Destroy(b.gameObject);
-                }
-
-                // Update the original block with the new number
-                _grid[column, row] = GetBlockDefinitionByNumber(newNumber);
-                var newBlock = GetBlockAtPosition(column, row);
-                if (newBlock != null)
-                {
-                    newBlock.SetDefinition(GetBlockDefinitionByNumber(newNumber));
-
-                    // Ensure the new block is properly positioned
-                    newBlock.transform.SetParent(columns[column].transform.GetChild(row), false);
-                    newBlock.transform.localPosition = Vector3.zero;
-
-                    // Check surrounding blocks for potential new merges
-                    CheckSurroundingBlocksForMerge(column, row);
-
-                    // Drop floating blocks
-                    DropFloatingBlocks();
-
-                    // Update score
-                    GameManager.Instance.scoreManager.AddScore(newNumber);
-
-                    // Update highest block number
-                    GameManager.Instance.scoreManager.UpdateHighestBlockNumber(newNumber);
-                }
-                else
-                {
-                    Debug.LogError($"New block expected at column {column}, row {row}, but was null.");
-                }
-            }
-        }
-
-
-        private void CheckSurroundingBlocksForMerge(int column, int row)
-        {
-            // Check surrounding blocks for potential merges
-            for (var r = row - 1; r <= row + 1; r++)
-            {
-                if (r >= 0 && r < _grid.GetLength(1) && _grid[column, r] != null && !(r == row))
-                {
-                    CheckMerge(column, r);
-                }
-            }
-
-            for (var c = column - 1; c <= column + 1; c++)
-            {
-                if (c >= 0 && c < _grid.GetLength(0) && _grid[c, row] != null && !(c == column))
-                {
-                    CheckMerge(c, row);
-                }
+                ProcessGrid((column, row));
             }
         }
         
-        private void DropFloatingBlocks()
+        void ProcessGrid((int,int) lastDrop)
         {
-            Debug.Log("Dropping floating blocks in the entire grid");
-
-            bool blocksMoved;
-
-            // Continue to drop blocks until no blocks can be moved
-            do
+            if (CheckForMerges(lastDrop)) //If any merge happened on drop
             {
-                blocksMoved = false;
-
-                for (var column = 0; column < _grid.GetLength(0); column++)
+                var floatingBlocks = CheckForFloatingBlocks(); //Check for all floating blocks
+                if (floatingBlocks.Count > 0) //If there is any...
                 {
-                    for (var row = 1; row < _grid.GetLength(1); row++)
+                    Debug.Log($"After merge there was ({floatingBlocks.Count}) floating block/s that needed to drop");
+                    foreach (var block in floatingBlocks) //Drop them and have them recall ProcessGrid
                     {
-                        if (_grid[column, row] != null && _grid[column, row - 1] == null)
-                        {
-                            var block = GetBlockAtPosition(column, row);
-                            if (block == null)
-                            {
-                                Debug.LogError($"Block expected at column {column}, row {row}, but was null.");
-                                continue;
-                            }
-
-                            var targetRow = row - 1;
-
-                            // Find the lowest available position in the column
-                            while (targetRow > 0 && _grid[column, targetRow - 1] == null)
-                            {
-                                targetRow--;
-                            }
-
-                            // Move the block to the new position
-                            _grid[column, targetRow] = _grid[column, row];
-                            _grid[column, row] = null;
-
-                            block.transform.SetParent(columns[column].transform.GetChild(targetRow), false);
-                            block.transform.localPosition = Vector3.zero;
-
-                            Debug.Log($"Moved block from column: {column}, row: {row} to column: {column}, row: {targetRow}");
-                            blocksMoved = true;
-                        }
+                        StartCoroutine(DropBlock(GetBlockAtPosition(block.Item1, block.Item2), block.Item1, block.Item2));
                     }
                 }
-            } while (blocksMoved);
-
-            // After all blocks have been dropped, check for merges
-            CheckForMerges();
+            }
         }
 
-        private void CheckForMerges()
+        bool CheckForMerges((int,int) lastDrop)
         {
-            Debug.Log("Checking for merges in the entire grid");
+            var column = lastDrop.Item1;
+            var row = lastDrop.Item2;
+            
+            var merged = false;
+            var block = GetBlockAtPosition(column, row);
+            var number = block.definition.number;
+            bool mergeUp = false, mergeDown = false, mergeLeft = false, mergeRight = false;
 
-            for (var column = 0; column < _grid.GetLength(0); column++)
+            var sameCount = 0;
+
+            // Check adjacent cells
+            if (row < Rows - 1 && _grid[column, row + 1]?.number == number)
             {
-                for (var row = 0; row < _grid.GetLength(1); row++)
+                mergeDown = true;
+                sameCount++;
+            }
+
+            if (row > 0 && _grid[column, row - 1]?.number == number)
+            {
+                mergeUp = true;
+                sameCount++;
+            }
+
+            if (column < Columns - 1 && _grid[column + 1, row]?.number == number)
+            {
+                mergeLeft = true;
+                sameCount++;
+            }
+
+            if (column > 0 && _grid[column - 1, row]?.number == number)
+            {
+                mergeRight = true;
+                sameCount++;
+            }
+
+            if (sameCount >= 1)
+            {
+                var newAmount = sameCount == 1 ? number * 2 : number * 4;
+                var newBlock = GetBlockDefinitionByNumber(newAmount);
+                
+                Debug.Log($"Block({number}) - Merged with {sameCount} block/s make a new Block({newAmount})");
+
+                if (mergeDown)
+                {
+                    Debug.Log("Merged with a block below it");
+                    var mergedBlock = GetBlockAtPosition(column, row + 1);
+                    _grid[column, row + 1] = null;
+                    Destroy(mergedBlock.gameObject);
+                }
+
+                if (mergeUp)
+                {
+                    Debug.LogWarning("Merged with a block above it??? (shouldn't happen)");
+                    var mergedBlock = GetBlockAtPosition(column, row - 1);
+                    _grid[column, row - 1] = null;
+                    Destroy(mergedBlock.gameObject);
+                }
+
+                if (mergeLeft)
+                {
+                    Debug.Log("Merged with a block to the left");
+                    var mergedBlock = GetBlockAtPosition(column + 1, row);
+                    _grid[column + 1, row] = null;
+                    Destroy(mergedBlock.gameObject);
+                }
+
+                if (mergeRight)
+                {
+                    Debug.Log("Merged with a block to the right");
+                    var mergedBlock = GetBlockAtPosition(column - 1, row);
+                    _grid[column - 1, row] = null;
+                    Destroy(mergedBlock.gameObject);
+                }
+                _grid[column, row] = newBlock;
+                block.SetDefinition(newBlock);
+                merged = true;
+            }
+
+            return merged;
+        }
+
+        private List<(int, int)> CheckForFloatingBlocks()
+        {
+            var floatingBlocks = new List<(int, int)>();
+            for (var column = 0; column < Columns; column++)
+            {
+                for (var row = 0; row < Rows; row++)
                 {
                     if (_grid[column, row] != null)
                     {
-                        CheckMerge(column, row);
+                        if (row > 0 && _grid[column, row - 1] == null)
+                        {
+                            _grid[column, row] = null;
+                            floatingBlocks.Add((column,row));
+                        }
                     }
                 }
             }
+            
+            return floatingBlocks;
         }
-        
+
         private BlockDefinition GetRandomBlockDefinition()
         {
             return _currentSpawningPool[Random.Range(0, _currentSpawningPool.Count)];
