@@ -104,7 +104,7 @@ namespace Merge.Managers
             // Check vertically
             for (var r = row - 1; r <= row + 1; r++)
             {
-                if (r >= 0 && r < _grid.GetLength(1) && _grid[column, r] != null && _grid[column, r].number == number && !(r == row))
+                if (r >= 0 && r < _grid.GetLength(1) && _grid[column, r] != null && _grid[column, r].number == number && r != row)
                 {
                     sameBlocks.Add(GetBlockAtPosition(column, r));
                 }
@@ -113,7 +113,7 @@ namespace Merge.Managers
             // Check horizontally
             for (var c = column - 1; c <= column + 1; c++)
             {
-                if (c >= 0 && c < _grid.GetLength(0) && _grid[c, row] != null && _grid[c, row].number == number && !(c == column))
+                if (c >= 0 && c < _grid.GetLength(0) && _grid[c, row] != null && _grid[c, row].number == number && c != column)
                 {
                     sameBlocks.Add(GetBlockAtPosition(c, row));
                 }
@@ -144,25 +144,33 @@ namespace Merge.Managers
                 // Update the original block with the new number
                 _grid[column, row] = GetBlockDefinitionByNumber(newNumber);
                 var newBlock = GetBlockAtPosition(column, row);
-                newBlock.SetDefinition(GetBlockDefinitionByNumber(newNumber));
+                if (newBlock != null)
+                {
+                    newBlock.SetDefinition(GetBlockDefinitionByNumber(newNumber));
 
-                // Ensure the new block is properly positioned
-                newBlock.transform.SetParent(columns[column].transform.GetChild(row), false);
-                newBlock.transform.localPosition = Vector3.zero;
+                    // Ensure the new block is properly positioned
+                    newBlock.transform.SetParent(columns[column].transform.GetChild(row), false);
+                    newBlock.transform.localPosition = Vector3.zero;
 
-                // Check surrounding blocks for potential new merges
-                CheckSurroundingBlocksForMerge(column, row);
-                
-                // Drop floating blocks
-                DropFloatingBlocks();
+                    // Check surrounding blocks for potential new merges
+                    CheckSurroundingBlocksForMerge(column, row);
 
-                // Update score
-                GameManager.Instance.scoreManager.AddScore(newNumber);
+                    // Drop floating blocks
+                    DropFloatingBlocks();
 
-                // Update highest block number
-                GameManager.Instance.scoreManager.UpdateHighestBlockNumber(newNumber);
+                    // Update score
+                    GameManager.Instance.scoreManager.AddScore(newNumber);
+
+                    // Update highest block number
+                    GameManager.Instance.scoreManager.UpdateHighestBlockNumber(newNumber);
+                }
+                else
+                {
+                    Debug.LogError($"New block expected at column {column}, row {row}, but was null.");
+                }
             }
         }
+
 
         private void CheckSurroundingBlocksForMerge(int column, int row)
         {
@@ -186,36 +194,70 @@ namespace Merge.Managers
         
         private void DropFloatingBlocks()
         {
+            Debug.Log("Dropping floating blocks in the entire grid");
+
+            bool blocksMoved;
+
+            // Continue to drop blocks until no blocks can be moved
+            do
+            {
+                blocksMoved = false;
+
+                for (var column = 0; column < _grid.GetLength(0); column++)
+                {
+                    for (var row = 1; row < _grid.GetLength(1); row++)
+                    {
+                        if (_grid[column, row] != null && _grid[column, row - 1] == null)
+                        {
+                            var block = GetBlockAtPosition(column, row);
+                            if (block == null)
+                            {
+                                Debug.LogError($"Block expected at column {column}, row {row}, but was null.");
+                                continue;
+                            }
+
+                            var targetRow = row - 1;
+
+                            // Find the lowest available position in the column
+                            while (targetRow > 0 && _grid[column, targetRow - 1] == null)
+                            {
+                                targetRow--;
+                            }
+
+                            // Move the block to the new position
+                            _grid[column, targetRow] = _grid[column, row];
+                            _grid[column, row] = null;
+
+                            block.transform.SetParent(columns[column].transform.GetChild(targetRow), false);
+                            block.transform.localPosition = Vector3.zero;
+
+                            Debug.Log($"Moved block from column: {column}, row: {row} to column: {column}, row: {targetRow}");
+                            blocksMoved = true;
+                        }
+                    }
+                }
+            } while (blocksMoved);
+
+            // After all blocks have been dropped, check for merges
+            CheckForMerges();
+        }
+
+        private void CheckForMerges()
+        {
+            Debug.Log("Checking for merges in the entire grid");
+
             for (var column = 0; column < _grid.GetLength(0); column++)
             {
-                for (var row = 1; row < _grid.GetLength(1); row++)
+                for (var row = 0; row < _grid.GetLength(1); row++)
                 {
-                    if (_grid[column, row] != null && _grid[column, row - 1] == null)
+                    if (_grid[column, row] != null)
                     {
-                        var block = GetBlockAtPosition(column, row);
-                        var targetRow = row - 1;
-
-                        // Find the lowest available position in the column
-                        while (targetRow > 0 && _grid[column, targetRow - 1] == null)
-                        {
-                            targetRow--;
-                        }
-
-                        // Move the block to the new position
-                        _grid[column, targetRow] = _grid[column, row];
-                        _grid[column, row] = null;
-
-                        block.transform.SetParent(columns[column].transform.GetChild(targetRow), false);
-                        block.transform.localPosition = Vector3.zero;
-
-                        Debug.Log($"Moved block from column: {column}, row: {row} to column: {column}, row: {targetRow}");
-                        CheckMerge(column, targetRow);
+                        CheckMerge(column, row);
                     }
                 }
             }
         }
-
-
+        
         private BlockDefinition GetRandomBlockDefinition()
         {
             return _currentSpawningPool[Random.Range(0, _currentSpawningPool.Count)];
@@ -223,7 +265,19 @@ namespace Merge.Managers
         
         private Block GetBlockAtPosition(int column, int row)
         {
-            return columns[column].transform.GetChild(row).GetComponentInChildren<Block>();
+            if (column < 0 || column >= _grid.GetLength(0) || row < 0 || row >= _grid.GetLength(1))
+            {
+                Debug.LogError($"Invalid position: column {column}, row {row}");
+                return null;
+            }
+
+            var parentTransform = columns[column].transform.GetChild(row);
+            if (parentTransform.childCount > 0)
+            {
+                return parentTransform.GetComponentInChildren<Block>();
+            }
+            Debug.LogWarning($"No block found at column: {column}, row: {row}");
+            return null;
         }
 
         private static BlockDefinition GetBlockDefinitionByNumber(int number)
