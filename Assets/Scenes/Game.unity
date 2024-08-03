@@ -274,6 +274,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c503531ebaf94f3595551a75eae8dcc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvasRectTransform: {fileID: 1514951307}
 --- !u!1 &196976050
 GameObject:
   m_ObjectHideFlags: 0
@@ -1593,7 +1594,7 @@ GameObject:
   - component: {fileID: 796995135}
   - component: {fileID: 796995134}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Column 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1651,7 +1652,7 @@ MonoBehaviour:
   m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ReverseArrangement: 1
 --- !u!222 &796995135
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1672,7 +1673,7 @@ GameObject:
   - component: {fileID: 812886493}
   - component: {fileID: 812886492}
   m_Layer: 5
-  m_Name: Image (3)
+  m_Name: Column 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1730,7 +1731,7 @@ MonoBehaviour:
   m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ReverseArrangement: 1
 --- !u!222 &812886493
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1903,7 +1904,7 @@ GameObject:
   - component: {fileID: 877820778}
   - component: {fileID: 877820777}
   m_Layer: 5
-  m_Name: Image (2)
+  m_Name: Column 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1961,7 +1962,7 @@ MonoBehaviour:
   m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ReverseArrangement: 1
 --- !u!222 &877820778
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2810,7 +2811,7 @@ GameObject:
   - component: {fileID: 1482237897}
   - component: {fileID: 1482237896}
   m_Layer: 5
-  m_Name: Image (4)
+  m_Name: Column 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2868,7 +2869,7 @@ MonoBehaviour:
   m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ReverseArrangement: 1
 --- !u!222 &1482237897
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2934,10 +2935,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2af7d83157740f5a697149b67ea5f74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  columns: 5
-  rows: 7
   blockPrefab: {fileID: 3150019972923799504, guid: 00f20484dd6bea64682810a774169cce, type: 3}
   nextBlockPreview: {fileID: 250946098}
+  columns:
+  - {fileID: 796995132}
+  - {fileID: 1561688892}
+  - {fileID: 877820775}
+  - {fileID: 812886490}
+  - {fileID: 1482237894}
 --- !u!114 &1514951309
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3090,7 +3095,7 @@ GameObject:
   - component: {fileID: 1561688895}
   - component: {fileID: 1561688894}
   m_Layer: 5
-  m_Name: Image (1)
+  m_Name: Column 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3148,7 +3153,7 @@ MonoBehaviour:
   m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ReverseArrangement: 1
 --- !u!222 &1561688895
 CanvasRenderer:
   m_ObjectHideFlags: 0

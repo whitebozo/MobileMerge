@@ -14,7 +14,7 @@ namespace Merge.Managers
         public BlockDefinitions blockDefinitions;
         public Milestones milestones;
 
-        void Awake()
+        private void Awake()
         {
             if (Instance == null)
             {
@@ -27,7 +27,7 @@ namespace Merge.Managers
             }
         }
 
-        void Start()
+        private void Start()
         {
             gridManager.Initialize();
             scoreManager.Initialize();

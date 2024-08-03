@@ -1,6 +1,4 @@
-﻿using Merge.Objects;
-using Merge.Objects.ScriptableObjects;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Merge.Managers
 {
@@ -37,24 +35,20 @@ namespace Merge.Managers
             }
         }
 
-        void CheckMilestones()
+        private void CheckMilestones()
         {
             var milestones = GameManager.Instance.milestones;
 
-            while (_currentMilestoneIndex < milestones.milestones.Length &&
-                   _highestBlockNumber >= milestones.milestones[_currentMilestoneIndex].targetScore)
+            while (_currentMilestoneIndex < milestones.milestones.Length && _highestBlockNumber >= milestones.milestones[_currentMilestoneIndex].targetScore)
             {
                 var milestone = milestones.milestones[_currentMilestoneIndex];
                 GameManager.Instance.gridManager.AddBlocksToSpawningPool(milestone.blocksToAdd);
-                foreach (var blockToRemove in milestone.blocksToRemove)
-                {
-                    GameManager.Instance.gridManager.RemoveBlockFromSpawningPool(blockToRemove);
-                }
+                GameManager.Instance.gridManager.RemoveBlockFromSpawningPool(milestone.blocksToRemove);
                 _currentMilestoneIndex++;
             }
         }
 
-        void UpdateScoreUI()
+        private void UpdateScoreUI()
         {
             GameManager.Instance.uiManager.UpdateScoreText(_score);
         }

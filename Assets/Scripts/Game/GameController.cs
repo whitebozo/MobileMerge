@@ -5,13 +5,17 @@ namespace Merge.Game
 {
     public class GameController : MonoBehaviour
     {
-        void Update()
+        public RectTransform canvasRectTransform;
+
+        private void Update()
         {
             if (Input.GetMouseButtonDown(0))
             {
-                Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                var column = Mathf.Clamp((int)mousePosition.x, 0, GameManager.Instance.gridManager.columns - 1);
-                GameManager.Instance.gridManager.SpawnNewBlock(column);
+                // Convert mouse position to a position relative to the canvas
+                Vector2 mousePosition;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRectTransform, Input.mousePosition, null, out mousePosition);
+
+                GameManager.Instance.gridManager.HandleMouseClick(mousePosition, canvasRectTransform);
             }
         }
     }

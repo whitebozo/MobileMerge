@@ -5,7 +5,7 @@ namespace Merge.Managers
 {
     public class UIManager : MonoBehaviour
     {
-        public TMP_Text scoreText;
+        [SerializeField] private TMP_Text scoreText;
 
         public void Initialize()
         {
