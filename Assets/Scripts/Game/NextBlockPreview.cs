@@ -26,7 +26,7 @@ namespace Merge.Game
 
         public BlockDefinition GetNextBlockDefinition()
         {
-            return _nextBlock.definition;
+            return _nextBlock.Definition;
         }
     }
 }

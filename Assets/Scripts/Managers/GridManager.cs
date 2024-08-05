@@ -91,74 +91,32 @@ namespace Merge.Managers
             }
 
             row--;
-            Debug.Log($"Block dropped from [{column},{startingRow}] => [{column},{row}]");
             if (row < Rows)
             {
-                _grid[column, row] = block.definition;
-                ProcessGrid((column, row), startingRow != 0);
+                _grid[column, row] = block.Definition;
+                ProcessGrid((column, row));
             }
         }
         
-        void ProcessGrid((int,int) lastDrop, bool wasFloater)
+        void ProcessGrid((int,int) lastUpdatePosition)
         {
-            if (CheckForMerges(lastDrop)) // If any merge happened on drop
-            {
-                var floatingBlocks = CheckForFloatingBlocks(); // Check for all floating blocks
-                if (floatingBlocks.Count > 0) // If there is any...
-                {
-                    Debug.Log($"After merge there were ({floatingBlocks.Count}) floating block/s that needed to drop");
-                    foreach (var block in floatingBlocks) // Drop them and have them recall ProcessGrid
-                    {
-                        _grid[block.Item1, block.Item2] = null; //Remove block from grid
-                        var floatingBlock = GetBlockAtPosition(block.Item1, block.Item2);
-                        if (floatingBlock != null)
-                        {
-                            StartCoroutine(DropBlock(floatingBlock, block.Item1, block.Item2));
-                        }
-                        else
-                        {
-                            Debug.LogError($"No block found at position [{block.Item1},{block.Item2}] during floating block drop.");
-                        }
-                    }
-                }
-                else if (wasFloater)
-                {
-                    var extraFloatingBlocks = CheckForFloatingBlocks(); // Check for all floating blocks
-                    if (extraFloatingBlocks.Count > 0) // If there is any...
-                    {
-                        Debug.Log($"After merge there were ({extraFloatingBlocks.Count}) floating block/s that needed to drop");
-                        foreach (var block in extraFloatingBlocks) // Drop them and have them recall ProcessGrid
-                        {
-                            _grid[block.Item1, block.Item2] = null; //Remove block from grid
-                            var floatingBlock = GetBlockAtPosition(block.Item1, block.Item2);
-                            if (floatingBlock != null)
-                            {
-                                StartCoroutine(DropBlock(floatingBlock, block.Item1, block.Item2));
-                            }
-                            else
-                            {
-                                Debug.LogError($"No block found at position [{block.Item1},{block.Item2}] during floating block drop.");
-                            }
-                        }
-                    }
-                }
-            }
+            ProcessMerges(lastUpdatePosition);
+            ProcessFloatingBlocks();
         }
 
-        bool CheckForMerges((int, int) lastDrop)
+        void ProcessMerges((int, int) position)
         {
-            var column = lastDrop.Item1;
-            var row = lastDrop.Item2;
+            var column = position.Item1;
+            var row = position.Item2;
 
             var block = GetBlockAtPosition(column, row);
             if (block == null)
             {
                 Debug.LogError($"No block found at position [{column},{row}] during merge check.");
-                return false;
+                return;
             }
 
-            var number = block.definition.number;
-            var merged = false;
+            var number = block.Definition.number;
             bool mergeUp = false, mergeDown = false, mergeLeft = false, mergeRight = false;
 
             var sameCount = 0;
@@ -188,62 +146,83 @@ namespace Merge.Managers
                 sameCount++;
             }
 
-            if (sameCount >= 1)
+            if (sameCount < 1) return;
+            
+            var newAmount = sameCount switch
             {
-                var newAmount = sameCount == 1 ? number * 2 : number * 4;
-                var newBlock = GetBlockDefinitionByNumber(newAmount);
+                1 => number * 2,
+                2 => number * 4,
+                3 => number * 8,
+                _ => 0
+            };
+            
+            if(newAmount == 0) return;
                 
-                Debug.Log($"Block({number}) - Merged with {sameCount} block/s make a new Block({newAmount})");
-
-                if (mergeDown)
+            var newBlock = GetBlockDefinitionByNumber(newAmount);
+            
+            if (mergeDown)
+            {
+                var mergedBlock = GetBlockAtPosition(column, row + 1);
+                if (mergedBlock != null)
                 {
-                    Debug.Log("Merged with a block below it");
-                    var mergedBlock = GetBlockAtPosition(column, row + 1);
-                    if (mergedBlock != null)
-                    {
-                        _grid[column, row + 1] = null;
-                        Destroy(mergedBlock.gameObject);
-                    }
+                    _grid[column, row + 1] = null;
+                    Destroy(mergedBlock.gameObject);
                 }
-
-                if (mergeUp)
-                {
-                    Debug.LogWarning("Merged with a block above it??? (shouldn't happen)");
-                    var mergedBlock = GetBlockAtPosition(column, row - 1);
-                    if (mergedBlock != null)
-                    {
-                        _grid[column, row - 1] = null;
-                        Destroy(mergedBlock.gameObject);
-                    }
-                }
-
-                if (mergeLeft)
-                {
-                    Debug.Log("Merged with a block to the left");
-                    var mergedBlock = GetBlockAtPosition(column + 1, row);
-                    if (mergedBlock != null)
-                    {
-                        _grid[column + 1, row] = null;
-                        Destroy(mergedBlock.gameObject);
-                    }
-                }
-
-                if (mergeRight)
-                {
-                    Debug.Log("Merged with a block to the right");
-                    var mergedBlock = GetBlockAtPosition(column - 1, row);
-                    if (mergedBlock != null)
-                    {
-                        _grid[column - 1, row] = null;
-                        Destroy(mergedBlock.gameObject);
-                    }
-                }
-                _grid[column, row] = newBlock;
-                block.SetDefinition(newBlock);
-                merged = true;
             }
 
-            return merged;
+            if (mergeUp)
+            {
+                Debug.LogWarning("Merged with a block above it??? (shouldn't happen)");
+                var mergedBlock = GetBlockAtPosition(column, row - 1);
+                if (mergedBlock != null)
+                {
+                    _grid[column, row - 1] = null;
+                    Destroy(mergedBlock.gameObject);
+                }
+            }
+
+            if (mergeLeft)
+            {
+                var mergedBlock = GetBlockAtPosition(column + 1, row);
+                if (mergedBlock != null)
+                {
+                    _grid[column + 1, row] = null;
+                    Destroy(mergedBlock.gameObject);
+                }
+            }
+
+            if (mergeRight)
+            {
+                var mergedBlock = GetBlockAtPosition(column - 1, row);
+                if (mergedBlock != null)
+                {
+                    _grid[column - 1, row] = null;
+                    Destroy(mergedBlock.gameObject);
+                }
+            }
+            _grid[column, row] = newBlock;
+            block.SetDefinition(newBlock);
+            ProcessGrid((column, row)); // On merge reprocess Grid
+        }
+
+        private void ProcessFloatingBlocks()
+        {
+            var floatingBlocks = CheckForFloatingBlocks(); // Check for all floating blocks
+            if (floatingBlocks.Count <= 0) return; // Return if no blocks are floating
+            
+            foreach (var block in floatingBlocks) // Drop them
+            {
+                _grid[block.Item1, block.Item2] = null; // Remove block from grid
+                var floatingBlock = GetBlockAtPosition(block.Item1, block.Item2);
+                if (floatingBlock != null)
+                {
+                    StartCoroutine(DropBlock(floatingBlock, block.Item1, block.Item2));
+                }
+                else
+                {
+                    Debug.LogError($"No block found at position [{block.Item1},{block.Item2}] during floating block drop.");
+                }
+            }
         }
 
         private List<(int, int)> CheckForFloatingBlocks()
